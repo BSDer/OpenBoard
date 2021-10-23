@@ -93,6 +93,7 @@ BUILD_DIR = build
 macx:BUILD_DIR = $$BUILD_DIR/macx
 win32:BUILD_DIR = $$BUILD_DIR/win32
 linux-g++*:BUILD_DIR = $$BUILD_DIR/linux
+freebsd:BUILD_DIR = $$BUILD_DIR/freebsd
 
 CONFIG(debug, debug|release):BUILD_DIR = $$BUILD_DIR/debug
 CONFIG(release, debug|release) {
@@ -455,6 +456,31 @@ linux-g++* {
 
     LIBS += -lpoppler
     INCLUDEPATH += "/usr/include/poppler"
+
+    QMAKE_CFLAGS += -fopenmp
+    QMAKE_CXXFLAGS += -fopenmp
+    QMAKE_LFLAGS += -fopenmp
+    UB_LIBRARY.path = $$DESTDIR
+    UB_I18N.path = $$DESTDIR/i18n
+    UB_ETC.path = $$DESTDIR
+    UB_THIRDPARTY_INTERACTIVE.path = $$DESTDIR/library
+    system(mkdir -p $$BUILD_DIR)
+    system(echo "$$VERSION" > $$BUILD_DIR/version)
+    system(echo "$$LONG_VERSION" > $$BUILD_DIR/longversion)
+    system(echo "$$SVN_VERSION" > $$BUILD_DIR/svnversion)
+}
+
+freebsd-clang {
+    CONFIG += link_prl
+    LIBS += -L/usr/local/lib
+    LIBS += -lcrypto
+    INCLUDEPATH += "/usr/local/include"
+    #LIBS += -lprofiler
+    LIBS += -lX11
+    LIBS += -lquazip1-qt5
+    INCLUDEPATH += "/usr/local/include/QuaZip-Qt5-1.1/quazip"
+    LIBS += -lpoppler
+    INCLUDEPATH += "/usr/local/include/poppler"
 
     QMAKE_CFLAGS += -fopenmp
     QMAKE_CXXFLAGS += -fopenmp

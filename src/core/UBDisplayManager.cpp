@@ -140,7 +140,7 @@ int UBDisplayManager::numScreens()
     // Some window managers report two screens when the two monitors are in "cloned" mode; this hack ensures
     // that we consider this as just one screen. On most desktops, at least one of the following conditions is
     // a good indicator of the displays being in cloned or extended mode.
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
     if (screenCount > 1
         && (mDesktop->screenNumber(mDesktop->screen(0)) == mDesktop->screenNumber(mDesktop->screen(1))
             || mDesktop->screenGeometry(0) == mDesktop->screenGeometry(1)))

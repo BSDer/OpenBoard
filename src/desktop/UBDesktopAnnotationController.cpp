@@ -103,13 +103,13 @@ UBDesktopAnnotationController::UBDesktopAnnotationController(QObject *parent, UB
     mTransparentDrawingView->setScene(mTransparentDrawingScene);
     mTransparentDrawingScene->setDrawingMode(true);
 
-    mDesktopPalette = new UBDesktopPalette(mTransparentDrawingView, rightPalette); 
+    mDesktopPalette = new UBDesktopPalette(mTransparentDrawingView, rightPalette);
     // This was not fix, parent reverted
     // FIX #633: The palette must be 'floating' in order to stay on top of the library palette
 
     if (UBPlatformUtils::hasVirtualKeyboard())
     {
-        connect( UBApplication::boardController->paletteManager()->mKeyboardPalette, SIGNAL(keyboardActivated(bool)), 
+        connect( UBApplication::boardController->paletteManager()->mKeyboardPalette, SIGNAL(keyboardActivated(bool)),
                  mTransparentDrawingView, SLOT(virtualKeyboardActivated(bool)));
 
 #ifdef UB_REQUIRES_MASK_UPDATE
@@ -136,7 +136,7 @@ UBDesktopAnnotationController::UBDesktopAnnotationController(QObject *parent, UB
     connect(UBDrawingController::drawingController(), SIGNAL(stylusToolChanged(int)), this, SLOT(stylusToolChanged(int)));
 
     // Add the desktop associated palettes
-    mDesktopPenPalette = new UBDesktopPenPalette(mTransparentDrawingView, rightPalette); 
+    mDesktopPenPalette = new UBDesktopPenPalette(mTransparentDrawingView, rightPalette);
 
     connect(mDesktopPalette, SIGNAL(maximized()), mDesktopPenPalette, SLOT(onParentMaximized()));
     connect(mDesktopPalette, SIGNAL(minimizeStart(eMinimizedLocation)), mDesktopPenPalette, SLOT(onParentMinimized()));
@@ -336,7 +336,7 @@ void UBDesktopAnnotationController::showWindow()
 
     UBDrawingController::drawingController()->setStylusTool(mDesktopStylusTool);
 
-#ifndef Q_OS_LINUX
+#if !defined(Q_OS_LINUX) && !defined(Q_OS_FREEBSD)
     UBPlatformUtils::showFullScreen(mTransparentDrawingView);
 #else
     // this is necessary to avoid hiding the panels on Unity and Cinnamon

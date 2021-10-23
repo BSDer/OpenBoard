@@ -43,3 +43,8 @@ linux-g++-64 {
 
     SOURCES  += src/frameworks/UBPlatformUtils_linux.cpp
 }
+
+freebsd-clang {
+
+    SOURCES  += src/frameworks/UBPlatformUtils_linux.cpp
+}

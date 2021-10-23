@@ -81,7 +81,7 @@ const QString UBApplication::mimeTypeUniboardPage = QString("application/vnd.mne
 const QString UBApplication::mimeTypeUniboardPageItem =  QString("application/vnd.mnemis-uniboard-page-item");
 const QString UBApplication::mimeTypeUniboardPageThumbnail = QString("application/vnd.mnemis-uniboard-thumbnail");
 
-#if defined(Q_OS_OSX) || defined(Q_OS_LINUX)
+#if defined(Q_OS_OSX) || defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
 bool bIsMinimized = false;
 #endif
 
@@ -320,7 +320,7 @@ int UBApplication::exec(const QString& pFileToImport)
 
     connect(mainWindow->actionDesktop, SIGNAL(triggered(bool)), applicationController, SLOT(showDesktop(bool)));
     connect(mainWindow->actionDesktop, SIGNAL(triggered(bool)), this, SLOT(stopScript()));
-#if defined(Q_OS_OSX) || defined(Q_OS_LINUX)
+#if defined(Q_OS_OSX) || defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
     connect(mainWindow->actionHideApplication, SIGNAL(triggered()), this, SLOT(showMinimized()));
 #else
     connect(mainWindow->actionHideApplication, SIGNAL(triggered()), mainWindow, SLOT(showMinimized()));
@@ -374,7 +374,7 @@ void UBApplication::showMinimized()
 #ifdef Q_OS_OSX
     mainWindow->hide();
     bIsMinimized = true;
-#elif defined(Q_OS_LINUX)
+#elif defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
     mainWindow->showMinimized();
     bIsMinimized = true;
 #endif
@@ -595,7 +595,7 @@ bool UBApplication::eventFilter(QObject *obj, QEvent *event)
                 mainWindow->show();
             bIsMinimized = false;
         }
-#elif defined(Q_OS_LINUX)
+#elif defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
         if (bIsMinimized) {
             bIsMinimized = false;
             UBPlatformUtils::showFullScreen(mainWindow);

@@ -52,7 +52,7 @@ UBRubberBand::UBRubberBand(Shape s, QWidget * p)
     customStyle = QStyleFactory::create("windows");
 #elif defined(Q_OS_OSX)
     customStyle = QStyleFactory::create("macintosh");
-#elif defined(Q_OS_LINUX)
+#elif defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
     customStyle = QStyleFactory::create("oxygen");
 #endif
 
@@ -73,7 +73,7 @@ UBRubberBand::enm_resizingMode UBRubberBand::determineResizingMode(QPoint pos)
 {
     if (mMouseIsPressed)
         return mResizingMode;
-    
+
     QRect resizerTop    (mResizingBorderHeight               , 0                             , rect().width()-2*mResizingBorderHeight, mResizingBorderHeight                    );
     QRect resizerBottom (mResizingBorderHeight               , rect().height() - mResizingBorderHeight, rect().width()-2*mResizingBorderHeight, mResizingBorderHeight                    );
     QRect resizerLeft   (0                          , mResizingBorderHeight                  , mResizingBorderHeight                 , rect().height() - 2*mResizingBorderHeight);
@@ -85,7 +85,7 @@ UBRubberBand::enm_resizingMode UBRubberBand::determineResizingMode(QPoint pos)
     QRect resizerBottomRight(rect().width()-mResizingBorderHeight, rect().height() - mResizingBorderHeight, mResizingBorderHeight, mResizingBorderHeight);
 
     enm_resizingMode resizingMode;
-    
+
     QTransform cursorTransrofm;
 
     if (resizerTop.contains(pos))
@@ -135,7 +135,7 @@ UBRubberBand::enm_resizingMode UBRubberBand::determineResizingMode(QPoint pos)
     }
     else
         resizingMode = None;
-    
+
     if (None != resizingMode)
     {
         QPixmap pix(":/images/cursors/resize.png");
@@ -216,32 +216,32 @@ void UBRubberBand::mouseMoveEvent(QMouseEvent *event)
 
         case TopLeft:
             {
-                currentGeometry.setX(currentGeometry.x()+topLeftResizeVector.x());  
+                currentGeometry.setX(currentGeometry.x()+topLeftResizeVector.x());
                 currentGeometry.setY(currentGeometry.y()+topLeftResizeVector.y());
             }break;
 
         case TopRight:
             {
-                currentGeometry.setY(currentGeometry.y()+topLeftResizeVector.y());  
-                currentGeometry.setWidth(currentGeometry.width()+rightBottomResizeVector.x());                
+                currentGeometry.setY(currentGeometry.y()+topLeftResizeVector.y());
+                currentGeometry.setWidth(currentGeometry.width()+rightBottomResizeVector.x());
             }
             break;
 
         case BottomLeft:
             {
                 currentGeometry.setX(currentGeometry.x()+topLeftResizeVector.x());
-                currentGeometry.setHeight(currentGeometry.height()+rightBottomResizeVector.y());  
+                currentGeometry.setHeight(currentGeometry.height()+rightBottomResizeVector.y());
             }break;
 
         case BottomRight:
             {
                 currentGeometry.setWidth(currentGeometry.width()+rightBottomResizeVector.x());
-                currentGeometry.setHeight(currentGeometry.height()+rightBottomResizeVector.y());        
+                currentGeometry.setHeight(currentGeometry.height()+rightBottomResizeVector.y());
             }break;
-        
+
         }
         if(bGeometryChange)
-        {   
+        {
             setGeometry(currentGeometry);
         }
 
@@ -249,7 +249,7 @@ void UBRubberBand::mouseMoveEvent(QMouseEvent *event)
     }
 
     QRubberBand::mouseMoveEvent(event);
-} 
+}
 
 void UBRubberBand::mouseReleaseEvent(QMouseEvent *event)
 {

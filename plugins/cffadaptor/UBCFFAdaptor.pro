@@ -12,6 +12,7 @@ macx: SUB_DIR = macx
 linux-g++: SUB_DIR = linux
 linux-g++-32: SUB_DIR = linux
 linux-g++-64: SUB_DIR = linux
+freebsd-clang: SUB_DIR = freebsd
 
 THIRD_PARTY_PATH = ../../../Sankore-ThirdParty
 QUAZIP_DIR   = "$$PWD/../../../Sankore-ThirdParty/quazip/quazip-0.3"

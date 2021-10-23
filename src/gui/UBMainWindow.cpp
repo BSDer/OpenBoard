@@ -203,7 +203,7 @@ bool UBMainWindow::yesNoQuestion(QString windowTitle, QString text)
     messageBox.addButton(tr("No"),QMessageBox::NoRole);
     messageBox.setIcon(QMessageBox::Question);
 
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD)
     // to avoid to be handled by x11. This allows us to keep to the back all the windows manager stuff like palette, toolbar ...
     messageBox.setWindowFlags(Qt::Dialog | Qt::X11BypassWindowManagerHint);
 #else

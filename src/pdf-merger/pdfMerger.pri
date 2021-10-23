@@ -85,5 +85,8 @@ linux-g++-64 {
 
 }
 
+freebsd-clang {
 
+   LIBS += -lz
 
+}

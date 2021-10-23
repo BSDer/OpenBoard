@@ -39,7 +39,7 @@
 
 #include "globals/UBGlobals.h"
 
-#ifdef Q_OS_OSX
+#if defined(Q_OS_OSX) || defined(Q_OS_FREEBSD)
     #include <quazip.h>
     #include <quazipfile.h>
 #else

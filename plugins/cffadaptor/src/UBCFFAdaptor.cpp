@@ -34,7 +34,7 @@
 #include "UBCFFConstants.h"
 
 //THIRD_PARTY_WARNINGS_DISABLE
-#ifdef Q_OS_OSX
+#if defined(Q_OS_OSX) || defined(Q_OS_FREEBSD)
     #include <quazip.h>
     #include <quazipfile.h>
     #include <quazipfileinfo.h>
@@ -334,7 +334,7 @@ bool UBCFFAdaptor::deleteDir(const QString& pDirPath) const
     return dir.rmdir(pDirPath);
 }
 
-QList<QString> UBCFFAdaptor::getConversionMessages() 
+QList<QString> UBCFFAdaptor::getConversionMessages()
 {
     return mConversionMessages;
 }
@@ -367,7 +367,7 @@ UBCFFAdaptor::UBToCFFConverter::UBToCFFConverter(const QString &source, const QS
 
     errorStr = noErrorMsg;
     mDataModel = new QDomDocument;
-    mDocumentToWrite = new QDomDocument; 
+    mDocumentToWrite = new QDomDocument;
     mDocumentToWrite->setContent(QString("<doc></doc>"));
 
     mIWBContentWriter = new QXmlStreamWriter;
@@ -404,7 +404,7 @@ bool UBCFFAdaptor::UBToCFFConverter::parse()
 
     mIWBContentWriter->writeStartDocument();
     mIWBContentWriter->writeStartElement(tIWBRoot);
-    
+
     fillNamespaces();
 
     mIWBContentWriter->writeAttribute(aIWBVersion, avIWBVersionNo);
@@ -516,7 +516,7 @@ bool UBCFFAdaptor::UBToCFFConverter::parseContent() {
         qDebug() << "can't find any content file";
         errorStr = "ErrorContentFile";
         return false;
-    } else 
+    } else
     {
         QDomElement pageset = parsePageset(pageList);
         if (pageset.isNull())
@@ -525,7 +525,7 @@ bool UBCFFAdaptor::UBToCFFConverter::parseContent() {
             svgDocumentSection.appendChild(pageset);
     }
 
-    
+
     if (QRect() == mViewbox)
     {
         mViewbox.setRect(0,0, mSVGSize.width(), mSVGSize.height());
@@ -591,13 +591,13 @@ QDomElement UBCFFAdaptor::UBToCFFConverter::parsePage(const QString &pageFileNam
         nextTopElement = nextTopElement.nextSiblingElement();
     }
 
-    pageFile.close(); 
+    pageFile.close();
 
     return page.hasChildNodes() ? page : QDomElement();
 }
 
 QDomElement UBCFFAdaptor::UBToCFFConverter::parsePageset(const QStringList &pageFileNames)
-{   
+{
     QMultiMap<int, QDomElement> pageList;
     int iPageNo = 1;
 
@@ -607,11 +607,11 @@ QDomElement UBCFFAdaptor::UBToCFFConverter::parsePageset(const QStringList &page
 
         QString curPageFile = curPage.next();
         QDomElement iterElement = parsePage(curPageFile);
-        if (!iterElement.isNull())           
+        if (!iterElement.isNull())
         {
             iterElement.setAttribute(tId, iPageNo);
             addSVGElementToResultModel(iterElement, pageList, iPageNo);
-            iPageNo++; 
+            iPageNo++;
         }
         else
             return QDomElement();
@@ -619,14 +619,14 @@ QDomElement UBCFFAdaptor::UBToCFFConverter::parsePageset(const QStringList &page
 
 
     if (!pageList.count())
-        return QDomElement(); 
+        return QDomElement();
 
 
     QDomElement svgPagesetElement = mDocumentToWrite->createElementNS(svgIWBNS,":"+ tIWBPageSet);
 
     QMapIterator<int, QDomElement> nextSVGElement(pageList);
     nextSVGElement.toFront();
-    while (nextSVGElement.hasNext()) 
+    while (nextSVGElement.hasNext())
         svgPagesetElement.appendChild(nextSVGElement.next().value());
 
     return svgPagesetElement.hasChildNodes() ? svgPagesetElement : QDomElement();
@@ -647,9 +647,9 @@ QDomElement UBCFFAdaptor::UBToCFFConverter::parseSvgPageSection(const QDomElemen
     QDomElement svgElementPart = mDocumentToWrite->createElementNS(svgIWBNS,":"+ tIWBPage);
 
     if (element.hasAttribute(aDarkBackground)) {
-         createBackground(element, svgElements);       
+         createBackground(element, svgElements);
     }
-   
+
     //Parsing svg children attributes
     // Elements can know about its layer, so it must add result QDomElements to ordrered list.
     QDomElement nextElement = element.firstChildElement();
@@ -676,9 +676,9 @@ QDomElement UBCFFAdaptor::UBToCFFConverter::parseSvgPageSection(const QDomElemen
     // we returns just element because we don't care about layer.
     QMapIterator<int, QDomElement> nextSVGElement(svgElements);
     nextSVGElement.toFront();
-    while (nextSVGElement.hasNext()) 
+    while (nextSVGElement.hasNext())
         svgElementPart.appendChild(nextSVGElement.next().value());
- 
+
     return svgElementPart.hasChildNodes() ? svgElementPart : QDomElement();
 }
 
@@ -764,13 +764,13 @@ QString UBCFFAdaptor::UBToCFFConverter::getDstContentFolderName(const QString &e
         sDstContentFolderName = cfImages;
     else
     if (tIWBVideo == elementType)
-        sDstContentFolderName = cfVideos;    
+        sDstContentFolderName = cfVideos;
     else
     if (tIWBAudio == elementType)
         sDstContentFolderName = cfAudios;
 
     sRet = sDstContentFolderName;
- 
+
     return sRet;
 }
 
@@ -790,13 +790,13 @@ QString UBCFFAdaptor::UBToCFFConverter::getSrcContentFolderName(QString href)
 
 //     if (0 < ls.count())
 //         sRet = ls.at(ls.count()-1);
-//     
+//
 //     sRet = href.remove(sRet);
-// 
+//
 //     if (sRet.endsWith("/"))
 //         sRet.remove("/");
 
-    return sRet;   
+    return sRet;
 }
 
 QString UBCFFAdaptor::UBToCFFConverter::getFileNameFromPath(const QString sPath)
@@ -845,7 +845,7 @@ QString UBCFFAdaptor::UBToCFFConverter::convertExtention(const QString &ext)
     else
     if (feWgt == ext)
         sRet = fePng;
-    else 
+    else
         sRet = ext;
 
     return sRet;
@@ -865,10 +865,10 @@ QString UBCFFAdaptor::UBToCFFConverter::getElementTypeFromUBZ(const QDomElement 
                 sRet = element.attribute(aUBZType);
         }
         else
-        {      
+        {
             if (element.hasAttribute(aSrc))
                 sPath = element.attribute(aSrc);
-            else 
+            else
             if (element.hasAttribute(aUBZHref))
                 sPath = element.attribute(aUBZHref);
 
@@ -878,12 +878,12 @@ QString UBCFFAdaptor::UBToCFFConverter::getElementTypeFromUBZ(const QDomElement 
                 QString elementType = tsl.at(tsl.count()-1);
                 if (iwbElementImage.contains(elementType))
                     sRet = tIWBImage;
-                else 
+                else
                 if (iwbElementAudio.contains(elementType))
                     sRet = tIWBAudio;
                 else
                 if (iwbElementVideo.contains(elementType))
-                    sRet = tIWBVideo;   
+                    sRet = tIWBVideo;
             }
         }
     }
@@ -898,7 +898,7 @@ int UBCFFAdaptor::UBToCFFConverter::getElementLayer(const QDomElement &element)
     int iRetLayer = 0;
     if (element.hasAttribute(aZLayer))
         iRetLayer = (int)element.attribute(aZLayer).toDouble();
-    else 
+    else
         iRetLayer = DEFAULT_LAYER;
 
     return iRetLayer;
@@ -910,7 +910,7 @@ bool UBCFFAdaptor::UBToCFFConverter::itIsSupportedFormat(const QString &format) 
 
     QStringList tsl = format.split(".", QString::SkipEmptyParts);
     if (0 < tsl.count())
-        bRet = cffSupportedFileFormats.contains(tsl.at(tsl.count()-1).toLower());       
+        bRet = cffSupportedFileFormats.contains(tsl.at(tsl.count()-1).toLower());
     else
         bRet = false;
 
@@ -930,7 +930,7 @@ bool UBCFFAdaptor::UBToCFFConverter::itIsFormatToConvert(const QString &format) 
 bool UBCFFAdaptor::UBToCFFConverter::itIsSVGElementAttribute(const QString ItemType, const QString &AttrName)
 {
     QString allowedElementAttributes = iwbSVGItemsAttributes[ItemType];
-  
+
     allowedElementAttributes.remove("/t");
     allowedElementAttributes.remove(" ");
     foreach(QString attr, allowedElementAttributes.split(","))
@@ -976,7 +976,7 @@ bool UBCFFAdaptor::UBToCFFConverter::ibwAddLine(int x1, int y1, int x2, int y2, 
     svgBackgroundCrossPart.setTagName(tIWBLine);
 
     svgBackgroundCrossPart.setAttribute(aX+"1", x1);
-    svgBackgroundCrossPart.setAttribute(aY+"1", y1);  
+    svgBackgroundCrossPart.setAttribute(aY+"1", y1);
     svgBackgroundCrossPart.setAttribute(aX+"2", x2);
     svgBackgroundCrossPart.setAttribute(aY+"2", y2);
 
@@ -985,7 +985,7 @@ bool UBCFFAdaptor::UBToCFFConverter::ibwAddLine(int x1, int y1, int x2, int y2, 
 
     svgBackgroundCrossPart.setAttribute(aID, sUUID);
 
-    if (isBackground)     
+    if (isBackground)
     {
         iwbBackgroundCrossPart.setAttribute(aRef, sUUID);
         iwbBackgroundCrossPart.setAttribute(aLocked, avTrue);
@@ -1007,7 +1007,7 @@ bool UBCFFAdaptor::UBToCFFConverter::ibwAddLine(int x1, int y1, int x2, int y2, 
 QTransform UBCFFAdaptor::UBToCFFConverter::getTransformFromUBZ(const QDomElement &ubzElement)
 {
     QTransform trRet;
-  
+
     QStringList transformParameters;
 
     QString ubzTransform = ubzElement.attribute(aTransform);
@@ -1028,7 +1028,7 @@ QTransform UBCFFAdaptor::UBToCFFConverter::getTransformFromUBZ(const QDomElement
             transformParameters.at(5).toDouble());
 
         trRet = *tr;
-        
+
         delete tr;
     }
 
@@ -1043,7 +1043,7 @@ QTransform UBCFFAdaptor::UBToCFFConverter::getTransformFromUBZ(const QDomElement
             transformParameters.at(5).toDouble());
 
         trRet = *tr;
-        
+
         delete tr;
     }
     return trRet;
@@ -1052,10 +1052,10 @@ QTransform UBCFFAdaptor::UBToCFFConverter::getTransformFromUBZ(const QDomElement
 qreal UBCFFAdaptor::UBToCFFConverter::getAngleFromTransform(const QTransform &tr)
 {
     qreal angle = -(atan(tr.m21()/tr.m11())*180/PI);
-    if (tr.m21() > 0 && tr.m11() < 0) 
+    if (tr.m21() > 0 && tr.m11() < 0)
         angle += 180;
-    else 
-        if (tr.m21() < 0 && tr.m11() < 0) 
+    else
+        if (tr.m21() < 0 && tr.m11() < 0)
             angle += 180;
     return angle;
 }
@@ -1064,8 +1064,8 @@ void UBCFFAdaptor::UBToCFFConverter::setGeometryFromUBZ(const QDomElement &ubzEl
 {
     setCoordinatesFromUBZ(ubzElement,iwbElement);
 
-  
- 
+
+
 }
 
 void UBCFFAdaptor::UBToCFFConverter::setCoordinatesFromUBZ(const QDomElement &ubzElement, QDomElement &iwbElement)
@@ -1081,7 +1081,7 @@ void UBCFFAdaptor::UBToCFFConverter::setCoordinatesFromUBZ(const QDomElement &ub
     qreal width = ubzElement.attribute(aWidth).toDouble();
 
     qreal alpha = getAngleFromTransform(tr);
- 
+
     QRectF itemRect;
     QGraphicsRectItem item;
 
@@ -1089,7 +1089,7 @@ void UBCFFAdaptor::UBToCFFConverter::setCoordinatesFromUBZ(const QDomElement &ub
     item.setTransform(tr);
     item.setRotation(-alpha);
     QMatrix sceneMatrix = item.sceneMatrix();
- 
+
     iwbElement.setAttribute(aX, x);
     iwbElement.setAttribute(aY, y);
     iwbElement.setAttribute(aHeight, height*sceneMatrix.m22());
@@ -1102,11 +1102,11 @@ void UBCFFAdaptor::UBToCFFConverter::setCoordinatesFromUBZ(const QDomElement &ub
 bool UBCFFAdaptor::UBToCFFConverter::setContentFromUBZ(const QDomElement &ubzElement, QDomElement &svgElement)
 {
     bool bRet = true;
-   
+
     QString srcPath;
     if (tUBZForeignObject != ubzElement.tagName())
         srcPath = ubzElement.attribute(aUBZHref);
-    else 
+    else
         srcPath = ubzElement.attribute(aSrc);
 
     QString sSrcContentFolder = getSrcContentFolderName(srcPath);
@@ -1143,7 +1143,7 @@ bool UBCFFAdaptor::UBToCFFConverter::setContentFromUBZ(const QDomElement &ubzEle
         }
     }
     else
-    if (itIsFormatToConvert(fileExtention)) // we cannot copy that source files. We need to create dst. file from src. file without copy. 
+    if (itIsFormatToConvert(fileExtention)) // we cannot copy that source files. We need to create dst. file from src. file without copy.
     {
         if (feSvg == fileExtention)
         {
@@ -1155,7 +1155,7 @@ bool UBCFFAdaptor::UBToCFFConverter::setContentFromUBZ(const QDomElement &ubzEle
             if (bRet)
             {
                 if (feSvg == fileExtention) // svg images must be converted to PNG.
-                {           
+                {
                     QString dstFilePath = destinationPath+"/"+sDstContentFolder+"/"+sDstFileName;
                     bRet &= createPngFromSvg(sSrcFileName, dstFilePath, getTransformFromUBZ(ubzElement));
                 }
@@ -1173,12 +1173,12 @@ bool UBCFFAdaptor::UBToCFFConverter::setContentFromUBZ(const QDomElement &ubzEle
         }
     }else
     {
-        addLastExportError(QObject::tr("Element ID = ") + QString("%1 \r\n").arg(ubzElement.attribute(aUBZUuid)) 
+        addLastExportError(QObject::tr("Element ID = ") + QString("%1 \r\n").arg(ubzElement.attribute(aUBZUuid))
                          + QString("Source file  = ") + QString("%1 \r\n").arg(ubzElement.attribute(aUBZSource))
                          + QObject::tr("Content is not supported in destination format."));
         bRet = false;
     }
-   
+
     if (!bRet)
     {
         qDebug() << "format is not supported by CFF";
@@ -1191,21 +1191,21 @@ void UBCFFAdaptor::UBToCFFConverter::setCFFTextFromHTMLTextNode(const QDomElemen
 {
 
     QDomDocument textDoc;
-               
+
     QDomElement textParentElement = iwbElement;
 
     QString textString;
     QDomNode htmlPNode =  htmlTextNode.firstChild();
     bool bTbreak = false;
 
-    // reads HTML text strings - each string placed in separate <p> section 
+    // reads HTML text strings - each string placed in separate <p> section
     while(!htmlPNode.isNull())
-    {  
+    {
         // add <tbreak> for split strings
         if (bTbreak)
         {
             bTbreak = false;
-            
+
             QDomElement tbreakNode = textDoc.createElementNS(svgIWBNS, svgIWBNSPrefix+":"+tIWBTbreak);
             textParentElement.appendChild(tbreakNode.cloneNode(true));
         }
@@ -1221,13 +1221,13 @@ void UBCFFAdaptor::UBToCFFConverter::setCFFTextFromHTMLTextNode(const QDomElemen
             }
             else
             if (spanNode.isElement())
-            {      
+            {
                 QDomElement pElementIwb;
                 QDomElement spanElement = textDoc.createElementNS(svgIWBNS,svgIWBNSPrefix + ":" + tIWBTspan);
                 setCommonAttributesFromUBZ(htmlPNode.toElement(), pElementIwb, spanElement);
 
                 if (spanNode.hasAttributes())
-                {       
+                {
                     int attrCount = spanNode.attributes().count();
                     if (0 < attrCount)
                     {
@@ -1237,11 +1237,11 @@ void UBCFFAdaptor::UBToCFFConverter::setCFFTextFromHTMLTextNode(const QDomElemen
                             QStringList cffAttributes = spanNode.attributes().item(i).nodeValue().split(";", QString::SkipEmptyParts);
                             {
                                 for (int i = 0; i < cffAttributes.count(); i++)
-                                {                       
+                                {
                                     QString attr = cffAttributes.at(i).trimmed();
                                     QStringList AttrVal = attr.split(":", QString::SkipEmptyParts);
                                     if(1 < AttrVal.count())
-                                    {    
+                                    {
                                         QString sAttr = ubzAttrNameToCFFAttrName(AttrVal.at(0));
                                         if (itIsSVGElementAttribute(spanElement.tagName(), sAttr))
                                             spanElement.setAttribute(sAttr, ubzAttrValueToCFFAttrName(AttrVal.at(1)));
@@ -1251,7 +1251,7 @@ void UBCFFAdaptor::UBToCFFConverter::setCFFTextFromHTMLTextNode(const QDomElemen
                         }
                     }
                 }
-                QDomText nodeText = textDoc.createTextNode(spanNode.firstChild().nodeValue());                    
+                QDomText nodeText = textDoc.createTextNode(spanNode.firstChild().nodeValue());
                 spanElement.appendChild(nodeText);
                 textParentElement.appendChild(spanElement.cloneNode(true));
             }
@@ -1283,10 +1283,10 @@ QString UBCFFAdaptor::UBToCFFConverter::ubzAttrValueToCFFAttrName(QString cffVal
 }
 
 bool UBCFFAdaptor::UBToCFFConverter::setCFFAttribute(const QString &attributeName, const QString &attributeValue, const QDomElement &ubzElement, QDomElement &iwbElement,  QDomElement &svgElement)
-{  
+{
     bool bRet = true;
     bool bNeedsIWBSection = false;
-    
+
     if (itIsIWBAttribute(attributeName))
     {
         if (!((aBackground == attributeName) && (avFalse == attributeValue)))
@@ -1315,7 +1315,7 @@ bool UBCFFAdaptor::UBToCFFConverter::setCFFAttribute(const QString &attributeNam
 
                 svgElement.setAttribute(aID, id);
             }
-        else 
+        else
             if (attributeName.contains(aUBZHref)||attributeName.contains(aSrc))
             {
                 bRet &= setContentFromUBZ(ubzElement, svgElement);
@@ -1328,7 +1328,7 @@ bool UBCFFAdaptor::UBToCFFConverter::setCFFAttribute(const QString &attributeNam
             svgElement.setAttribute(attributeName,  attributeValue);
     }
 
-    if (bNeedsIWBSection)  
+    if (bNeedsIWBSection)
     {
         if (0 < iwbElement.attributes().count())
         {
@@ -1339,7 +1339,7 @@ bool UBCFFAdaptor::UBToCFFConverter::setCFFAttribute(const QString &attributeNam
             if (QString() == id)
                 id = QUuid::createUuid().toString();
 
-            svgElement.setAttribute(aID, id);  
+            svgElement.setAttribute(aID, id);
             iwbElement.setAttribute(aRef, id);
         }
     }
@@ -1348,7 +1348,7 @@ bool UBCFFAdaptor::UBToCFFConverter::setCFFAttribute(const QString &attributeNam
 }
 
 bool UBCFFAdaptor::UBToCFFConverter::setCommonAttributesFromUBZ(const QDomElement &ubzElement, QDomElement &iwbElement,  QDomElement &svgElement)
-{    
+{
     bool bRet = true;
 
     for (int i = 0; i < ubzElement.attributes().count(); i++)
@@ -1372,16 +1372,16 @@ QDomNode UBCFFAdaptor::UBToCFFConverter::findTextNode(const QDomNode &node)
     QDomNode iterNode = node;
 
     while (!iterNode.isNull())
-    {       
+    {
         if (iterNode.isText())
-        {   
-            if (!iterNode.isNull())              
+        {
+            if (!iterNode.isNull())
                 return iterNode;
         }
-        else 
+        else
         {
             if (!iterNode.firstChild().isNull())
-            {   
+            {
                 QDomNode foundNode = findTextNode(iterNode.firstChild());
                 if (!foundNode.isNull())
                     if (foundNode.isText())
@@ -1390,7 +1390,7 @@ QDomNode UBCFFAdaptor::UBToCFFConverter::findTextNode(const QDomNode &node)
         }
         if (!iterNode.nextSibling().isNull())
             iterNode = iterNode.nextSibling();
-        else 
+        else
             break;
     }
     return iterNode;
@@ -1401,11 +1401,11 @@ QDomNode UBCFFAdaptor::UBToCFFConverter::findNodeByTagName(const QDomNode &node,
     QDomNode iterNode = node;
 
     while (!iterNode.isNull())
-    {       
+    {
         QString t = iterNode.toElement().tagName();
         if (tagName == t)
             return iterNode;
-        else 
+        else
         {
             if (!iterNode.firstChildElement().isNull())
             {
@@ -1421,10 +1421,10 @@ QDomNode UBCFFAdaptor::UBToCFFConverter::findNodeByTagName(const QDomNode &node,
                 }
             }
         }
-        
+
         if (!iterNode.nextSibling().isNull())
             iterNode = iterNode.nextSibling();
-        else 
+        else
             break;
     }
     return QDomNode();
@@ -1452,10 +1452,10 @@ bool UBCFFAdaptor::UBToCFFConverter::createBackground(const QDomElement &element
         bckRect.topLeft().setY(0);
 
     if (QRect() != bckRect)
-    {     
+    {
         QString sElementID = QUuid::createUuid().toString();
 
-        bool darkBackground = (avTrue == element.attribute(aDarkBackground));    
+        bool darkBackground = (avTrue == element.attribute(aDarkBackground));
         svgBackgroundElementPart.setAttribute(aFill, darkBackground ? "black" : "white");
         svgBackgroundElementPart.setAttribute(aID, sElementID);
         svgBackgroundElementPart.setAttribute(aX, bckRect.x());
@@ -1503,10 +1503,10 @@ QString UBCFFAdaptor::UBToCFFConverter::createBackgroundImage(const QDomElement 
 
         QImage *bckImage = new QImage(size, QImage::Format_RGB888);
 
-        QPainter *painter = new QPainter(bckImage);   
+        QPainter *painter = new QPainter(bckImage);
 
         bool darkBackground = (avTrue == element.attribute(aDarkBackground));
-     
+
         QColor bCrossColor;
 
         bCrossColor = darkBackground?QColor(Qt::white):QColor(Qt::blue);
@@ -1518,7 +1518,7 @@ QString UBCFFAdaptor::UBToCFFConverter::createBackgroundImage(const QDomElement 
         painter->drawRect(rect);
 
         if (avTrue == element.attribute(aCrossedBackground))
-        {    
+        {
             qreal firstY = ((int) (rect.y () / iCrossSize)) * iCrossSize;
 
             for (qreal yPos = firstY; yPos <= rect.y () + rect.height (); yPos += iCrossSize)
@@ -1533,10 +1533,10 @@ QString UBCFFAdaptor::UBToCFFConverter::createBackgroundImage(const QDomElement 
                 painter->drawLine (xPos, rect.y (), xPos, rect.y () + rect.height ());
             }
         }
-        
+
         painter->end();
         painter->save();
-        
+
         if (QString() != dstFilePath)
            if (bckImage->save(dstFilePath))
                sRet = cfImages+"/"+sDstFileName;
@@ -1544,7 +1544,7 @@ QString UBCFFAdaptor::UBToCFFConverter::createBackgroundImage(const QDomElement 
         delete bckImage;
         delete painter;
     }
-    else 
+    else
         sRet = cfImages+"/"+sDstFileName;
 
     return sRet;
@@ -1558,16 +1558,16 @@ bool UBCFFAdaptor::UBToCFFConverter::createPngFromSvg(QString &svgPath, QString 
 
         QSize iSize = (QSize() == size)?QSize(i.size().width()*transformation.m11(), i.size().height()*transformation.m22()):size;
 
-        QImage image(iSize, QImage::Format_ARGB32_Premultiplied);        
+        QImage image(iSize, QImage::Format_ARGB32_Premultiplied);
         image.fill(0);
         QPainter imagePainter(&image);
-        QSvgRenderer renderer(svgPath);  
-        renderer.render(&imagePainter);     
-      
+        QSvgRenderer renderer(svgPath);
+        renderer.render(&imagePainter);
+
         return image.save(dstPath);
 
     }
-    else 
+    else
         return false;
 }
 
@@ -1587,7 +1587,7 @@ bool UBCFFAdaptor::UBToCFFConverter::parseSVGGGroup(const QDomElement &element, 
     QDomDocument doc;
     QDomElement svgElementPart = doc.createElementNS(svgIWBNS,svgIWBNSPrefix + ":" + tIWBG);
     QDomElement iwbElementPart = doc.createElementNS(iwbNS,iwbNsPrefix + ":" + tElement);
-    
+
     // Elements can know about its layer, so it must add result QDomElements to ordrered list.
     while (!nextElement.isNull()) {
         QString tagName = nextElement.tagName();
@@ -1600,18 +1600,18 @@ bool UBCFFAdaptor::UBToCFFConverter::parseSVGGGroup(const QDomElement &element, 
 
     QList<int> layers;
     QMapIterator<int, QDomElement> nextSVGElement(svgElements);
-    while (nextSVGElement.hasNext()) 
+    while (nextSVGElement.hasNext())
         layers << nextSVGElement.next().key();
 
     qSort(layers);
     int layer = layers.at(0);
 
     nextSVGElement.toFront();
-    while (nextSVGElement.hasNext()) 
+    while (nextSVGElement.hasNext())
         svgElementPart.appendChild(nextSVGElement.next().value());
 
     addSVGElementToResultModel(svgElementPart, dstSvgList, layer);
- 
+
     return true;
 }
 bool UBCFFAdaptor::UBToCFFConverter::parseUBZImage(const QDomElement &element, QMultiMap<int, QDomElement> &dstSvgList)
@@ -1626,7 +1626,7 @@ bool UBCFFAdaptor::UBToCFFConverter::parseUBZImage(const QDomElement &element, Q
     if (setCommonAttributesFromUBZ(element, iwbElementPart, svgElementPart))
     {
         addSVGElementToResultModel(svgElementPart, dstSvgList, getElementLayer(element));
-       
+
         if (0 < iwbElementPart.attributes().count())
             addIWBElementToResultModel(iwbElementPart);
         return true;
@@ -1662,7 +1662,7 @@ bool UBCFFAdaptor::UBToCFFConverter::parseUBZVideo(const QDomElement &element, Q
         svgText.setAttribute(aHeight, svgElementPart.attribute(aHeight));
         svgText.setAttribute(aTransform, svgElementPart.attribute(aTransform));
 
-        QDomText text = doc.createTextNode("Cannot Open Content");  
+        QDomText text = doc.createTextNode("Cannot Open Content");
         svgText.appendChild(text);
 
         svgSwitchSection.appendChild(svgText);
@@ -1670,7 +1670,7 @@ bool UBCFFAdaptor::UBToCFFConverter::parseUBZVideo(const QDomElement &element, Q
         addSVGElementToResultModel(svgSwitchSection, dstSvgList, getElementLayer(element));
 
         if (0 < iwbElementPart.attributes().count())
-            addIWBElementToResultModel(iwbElementPart);  
+            addIWBElementToResultModel(iwbElementPart);
         return true;
     }
     else
@@ -1714,7 +1714,7 @@ bool UBCFFAdaptor::UBToCFFConverter::parseUBZAudio(const QDomElement &element, Q
         bool bRes = true;
         if (!dstDocFolder.exists(cfImages))
             bRes &= dstDocFolder.mkdir(cfImages);
-        
+
         // CFF cannot show SVG images, so we need to convert it to png.
         if (bRes && createPngFromSvg(srcAudioImageFile, dstAudioImageFilePath, getTransformFromUBZ(element), QSize(audioImageDimention, audioImageDimention)))
         {
@@ -1724,9 +1724,9 @@ bool UBCFFAdaptor::UBToCFFConverter::parseUBZAudio(const QDomElement &element, Q
             // first we place content
             QDomElement svgASection = doc.createElementNS(svgIWBNS,svgIWBNSPrefix + ":" + tIWBA);
             svgASection.setAttribute(aSVGHref, svgElementPart.attribute(aSVGHref));
-        
+
             svgElementPart.setTagName(tIWBImage);
-            svgElementPart.setAttribute(aSVGHref, dstAudioImageRelativePath); 
+            svgElementPart.setAttribute(aSVGHref, dstAudioImageRelativePath);
             svgElementPart.setAttribute(aHeight, audioImageDimention);
             svgElementPart.setAttribute(aWidth, audioImageDimention);
 
@@ -1742,10 +1742,10 @@ bool UBCFFAdaptor::UBToCFFConverter::parseUBZAudio(const QDomElement &element, Q
             svgText.setAttribute(aHeight, svgElementPart.attribute(aHeight));
             svgText.setAttribute(aTransform, svgElementPart.attribute(aTransform));
 
-            QDomText text = doc.createTextNode("Cannot Open Content");  
+            QDomText text = doc.createTextNode("Cannot Open Content");
             svgText.appendChild(text);
 
-            // switch section disabled because of imcompatibility with validator http://validator.imsglobal.org/iwb/index.jsp?validate=package          
+            // switch section disabled because of imcompatibility with validator http://validator.imsglobal.org/iwb/index.jsp?validate=package
             // svgSwitchSection.appendChild(svgText);
 
             // switch section disabled because of imcompatibility with validator http://validator.imsglobal.org/iwb/index.jsp?validate=package
@@ -1802,7 +1802,7 @@ bool UBCFFAdaptor::UBToCFFConverter::parseUBZText(const QDomElement &element, QM
 
     QDomElement svgElementPart = doc.createElementNS(svgIWBNS,svgIWBNSPrefix + ":" + getElementTypeFromUBZ(element));
     QDomElement iwbElementPart = doc.createElementNS(iwbNS,iwbNsPrefix + ":" + tElement);
-    
+
     if (element.hasChildNodes())
     {
         QDomDocument htmlDoc;
@@ -1826,18 +1826,18 @@ bool UBCFFAdaptor::UBToCFFConverter::parseUBZText(const QDomElement &element, QM
             {
                 QStringList AttrVal = commonAttributes.at(i).split(":", QString::SkipEmptyParts);
                 if (1 < AttrVal.count())
-                {                
+                {
                     QString sAttr = ubzAttrNameToCFFAttrName(AttrVal.at(0));
                     QString sVal  = ubzAttrValueToCFFAttrName(AttrVal.at(1));
 
                     setCFFAttribute(sAttr, sVal, element, iwbElementPart, svgElementPart);
                 }
-            }    
+            }
             addSVGElementToResultModel(svgElementPart, dstSvgList, getElementLayer(element));
             if (0 < iwbElementPart.attributes().count())
                 addIWBElementToResultModel(iwbElementPart);
             return true;
-        }  
+        }
         return false;
     }
     else
@@ -1863,13 +1863,13 @@ bool UBCFFAdaptor::UBToCFFConverter::parseUBZPolygon(const QDomElement &element,
         addSVGElementToResultModel(svgElementPart, dstSvgList, getElementLayer(element));
 
         if (0 < iwbElementPart.attributes().count())
-        {   
+        {
             QString id = svgElementPart.attribute(aUBZUuid);
             if (id.isEmpty())
                 id = QUuid::createUuid().toString();
 
             svgElementPart.setAttribute(aID, id);
-            iwbElementPart.setAttribute(aRef, id);     
+            iwbElementPart.setAttribute(aRef, id);
 
             addIWBElementToResultModel(iwbElementPart);
         }
@@ -1915,11 +1915,11 @@ bool UBCFFAdaptor::UBToCFFConverter::parseUBZPolyline(const QDomElement &element
         errorStr = "PolylineParsingError";
         return false;
     }
-    
+
 }
 
 bool UBCFFAdaptor::UBToCFFConverter::parseUBZLine(const QDomElement &element, QMultiMap<int, QDomElement> &dstSvgList)
-{   
+{
     qDebug() << "||parsing line";
     QDomElement resElement;
     QDomDocument doc;
@@ -1939,7 +1939,7 @@ bool UBCFFAdaptor::UBToCFFConverter::parseUBZLine(const QDomElement &element, QM
             iwbElementPart.setAttribute(aRef, id);
 
             addIWBElementToResultModel(iwbElementPart);
-        }      
+        }
     }
     else
     {
@@ -2037,7 +2037,7 @@ QRect UBCFFAdaptor::UBToCFFConverter::getViewboxRect(const QString &element) con
     dimList = element.split(dimensionsDelimiter2, QString::KeepEmptyParts);
     if (dimList.count() != 4) // row unlike 0 0 0 0
         return QRect();
-    
+
     bool ok = false;
 
     int x = dimList.takeFirst().toInt(&ok);
